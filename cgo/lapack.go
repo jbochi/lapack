@@ -1653,7 +1653,7 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 		panic(badWork)
 	}
 	if len(work) < max(1, lwork) {
-		panic(badWork)
+		panic(shortWork)
 	}
 
 	_k := []int32{0}
