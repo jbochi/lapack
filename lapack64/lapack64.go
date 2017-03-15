@@ -337,7 +337,7 @@ func Getrs(trans blas.Transpose, a blas64.General, b blas64.General, ipiv []int)
 // On exit, iwork contains the permutation required to sort alpha descending.
 //
 // iwork must have length n, work must have length at least max(1, lwork), and
-// lwork must be -1 or greater than zero, otherwise Ggsvd3 will panic. If
+// lwork must be -1 or greater than n, otherwise Ggsvd3 will panic. If
 // lwork is -1, work[0] holds the optimal lwork on return, but Ggsvd3 does
 // not perform the GSVD.
 func Ggsvd3(jobU, jobV, jobQ lapack.GSVDJob, a, b blas64.General, alpha, beta []float64, u, v, q blas64.General, work []float64, lwork int, iwork []int) (k, l int, ok bool) {
@@ -372,7 +372,7 @@ func Lantr(norm lapack.MatrixNorm, a blas64.Triangular, work []float64) float64 
 }
 
 // Lapmt rearranges the columns of the m×n matrix X as specified by the
-// permutation k_0, k_1, ..., k_n-1 of the integers 0, ..., n-1.
+// permutation k_0, k_1, ..., k_{n-1} of the integers 0, ..., n-1.
 //
 // If forward is true a forward permutation is performed:
 //
