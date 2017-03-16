@@ -121,7 +121,7 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 
 	// QR with column pivoting of B: B*P = V*[ S11 S12 ].
 	//                                       [  0   0  ]
-	for i := 0; i < n; i++ {
+	for i := range iwork[:n] {
 		iwork[i] = 0
 	}
 	impl.Dgeqp3(p, n, b, ldb, iwork, tau, work, lwork)
@@ -147,8 +147,9 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 
 	// Clean up B.
 	for i := 1; i < l; i++ {
-		for j := 0; j < i; j++ {
-			b[i*ldb+j] = 0
+		r := b[i*ldb : i*ldb+i]
+		for j := range r {
+			r[j] = 0
 		}
 	}
 	if p > l {
@@ -176,8 +177,9 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 		// Clean up B.
 		impl.Dlaset(blas.All, l, n-l, 0, 0, b, ldb)
 		for i := 1; i < l; i++ {
-			for j := n - l; j < i+n-l; j++ {
-				b[i*ldb+j] = 0
+			r := b[i*ldb+n-l : i*ldb+i+n-l]
+			for j := range r {
+				r[j] = 0
 			}
 		}
 	}
@@ -189,7 +191,7 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 	//
 	//          A11 = U*[  0  T12 ]*P1^T.
 	//                  [  0   0  ]
-	for i := 0; i < n-l; i++ {
+	for i := range iwork[:n-l] {
 		iwork[i] = 0
 	}
 	impl.Dgeqp3(m, n-l, a, lda, iwork[:n-l], tau, work, lwork)
@@ -221,8 +223,9 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 	// Clean up A: set the strictly lower triangular part of
 	// A[0:k, 0:k] = 0, and A[k:m, 0:n-l] = 0.
 	for i := 1; i < k; i++ {
-		for j := 0; j < i; j++ {
-			a[i*lda+j] = 0
+		r := a[i*lda : i*lda+i]
+		for j := range r {
+			r[j] = 0
 		}
 	}
 	if m > k {
@@ -241,8 +244,9 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 		// Clean up A.
 		impl.Dlaset(blas.All, k, n-l-k, 0, 0, a, lda)
 		for i := 1; i < k; i++ {
-			for j := n - k - l; j < i+n-k-l; j++ {
-				a[i*lda+j] = 0
+			r := a[i*lda+n-k-l : i*lda+i+n-k-l]
+			for j := range r {
+				a[j] = 0
 			}
 		}
 	}
@@ -257,8 +261,9 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 
 		// Clean up A.
 		for i := k + 1; i < n; i++ {
-			for j := n - l; j < i-k+n-l; j++ {
-				a[i*lda+j] = 0
+			r := a[i*lda+n-l : i*lda+i-k+n-l]
+			for j := range r {
+				r[j] = 0
 			}
 		}
 	}
