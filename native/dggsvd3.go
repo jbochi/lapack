@@ -203,7 +203,7 @@ func (impl Implementation) Dggsvd3(jobU, jobV, jobQ lapack.GSVDJob, m, n, p int,
 	// Sort the singular values and store the pivot indices in iwork
 	// Copy alpha to work, then sort alpha in work.
 	bi := blas64.Implementation()
-	bi.Dcopy(n, alpha, 1, work, 1)
+	bi.Dcopy(n, alpha, 1, work[:n], 1)
 	ibnd := min(l, m-k)
 	for i := 0; i < ibnd; i++ {
 		// Scan for largest alpha_{k+i}.
