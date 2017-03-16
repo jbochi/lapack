@@ -114,7 +114,7 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 
 	// tau check must come after lwkopt query since
 	// the Dggsvd3 call for lwkopt query may have
-	// lwork == 1, and tau is provided by work.
+	// lwork == -1, and tau is provided by work.
 	if len(tau) < n {
 		panic(badTau)
 	}
@@ -146,8 +146,8 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 	}
 
 	// Clean up B.
-	for j := 0; j < l-1; j++ {
-		for i := j + 1; i < l; i++ {
+	for i := 1; i < l; i++ {
+		for j := 0; j < i; j++ {
 			b[i*ldb+j] = 0
 		}
 	}
@@ -175,8 +175,8 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 
 		// Clean up B.
 		impl.Dlaset(blas.All, l, n-l, 0, 0, b, ldb)
-		for j := n - l; j < n; j++ {
-			for i := j - n + l + 1; i < l; i++ {
+		for i := 1; i < l; i++ {
+			for j := n - l; j < i+n-l; j++ {
 				b[i*ldb+j] = 0
 			}
 		}
@@ -220,8 +220,8 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 
 	// Clean up A: set the strictly lower triangular part of
 	// A[0:k, 0:k] = 0, and A[k:m, 0:n-l] = 0.
-	for j := 0; j < k-1; j++ {
-		for i := j + 1; i < k; i++ {
+	for i := 1; i < k; i++ {
+		for j := 0; j < i; j++ {
 			a[i*lda+j] = 0
 		}
 	}
@@ -240,8 +240,8 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 
 		// Clean up A.
 		impl.Dlaset(blas.All, k, n-l-k, 0, 0, a, lda)
-		for j := n - l - k; j < n-l; j++ {
-			for i := j - n + l + k + 1; i < k; i++ {
+		for i := 1; i < k; i++ {
+			for j := n - k - l; j < i+n-k-l; j++ {
 				a[i*lda+j] = 0
 			}
 		}
@@ -256,8 +256,8 @@ func (impl Implementation) Dggsvp3(jobU, jobV, jobQ lapack.GSVDJob, m, p, n int,
 		}
 
 		// Clean up A.
-		for j := n - l; j < n; j++ {
-			for i := j - n + k + l + 1; i < m; i++ {
+		for i := k + 1; i < n; i++ {
+			for j := n - l; j < i-k+n-l; j++ {
 				a[i*lda+j] = 0
 			}
 		}
