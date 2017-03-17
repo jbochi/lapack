@@ -859,7 +859,8 @@ func (impl Implementation) Dbdsqr(uplo blas.Uplo, n, ncvt, nru, ncc int, d, e, v
 //  [v1  v2  v3   e   d  u5]
 //
 // d, tauQ, and tauP must all have length at least min(m,n), and e must have
-// length min(m,n) - 1, unless lwork is -1.
+// length min(m,n) - 1, unless lwork is -1 when there is no check except for
+// work which must have a length of at least one.
 //
 // work is temporary storage, and lwork specifies the usable memory length.
 // At minimum, lwork >= max(m,n) and this function will panic otherwise.
@@ -871,9 +872,11 @@ func (impl Implementation) Dbdsqr(uplo blas.Uplo, n, ncvt, nru, ncc int, d, e, v
 func (impl Implementation) Dgebrd(m, n int, a []float64, lda int, d, e, tauQ, tauP, work []float64, lwork int) {
 	checkMatrix(m, n, a, lda)
 	minmn := min(m, n)
-	ws := max(m, n)
 	if lwork == -1 {
-		work[0] = float64(ws)
+		if len(work) < 1 {
+			panic(badWork)
+		}
+		work[0] = float64(minmn)
 		return
 	}
 	if len(d) < minmn {
@@ -888,7 +891,7 @@ func (impl Implementation) Dgebrd(m, n int, a []float64, lda int, d, e, tauQ, ta
 	if len(tauP) < minmn {
 		panic(badTauP)
 	}
-	if lwork < ws {
+	if lwork < minmn {
 		panic(badWork)
 	}
 	if len(work) < lwork {

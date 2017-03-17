@@ -42,7 +42,8 @@ import (
 //  [v1  v2  v3   e   d  u5]
 //
 // d, tauQ, and tauP must all have length at least min(m,n), and e must have
-// length min(m,n) - 1, unless lwork is -1.
+// length min(m,n) - 1, unless lwork is -1 when there is no check except for
+// work which must have a length of at least one.
 //
 // work is temporary storage, and lwork specifies the usable memory length.
 // At minimum, lwork >= max(m,n) and this function will panic otherwise.
@@ -57,6 +58,9 @@ func (impl Implementation) Dgebrd(m, n int, a []float64, lda int, d, e, tauQ, ta
 	// Calculate optimal work.
 	nb := impl.Ilaenv(1, "DGEBRD", " ", m, n, -1, -1)
 	if lwork == -1 {
+		if len(work) < 1 {
+			panic(badWork)
+		}
 		lworkOpt := (m + n) * nb
 		work[0] = float64(lworkOpt)
 		return
@@ -73,7 +77,7 @@ func (impl Implementation) Dgebrd(m, n int, a []float64, lda int, d, e, tauQ, ta
 	if len(tauP) < minmn {
 		panic(badTauP)
 	}
-	ws := max(m, n)
+	ws := minmn
 	if lwork < ws {
 		panic(badWork)
 	}
